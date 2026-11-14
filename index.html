@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Орбита</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -14,10 +14,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:#EEF3F5;color:#17394a;font-family:Manrope,-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.4}
-#app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 16px 120px}
-button,input,textarea{font:inherit;color:inherit}
+html{-webkit-text-size-adjust:100%;width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-y:none;touch-action:manipulation}
+body{margin:0;width:100%;max-width:100%;overflow-x:hidden;overflow-wrap:anywhere;background:#EEF3F5;color:#17394a;font-family:Manrope,-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.4}
+#app{width:100%;max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 16px 120px}
+button,input,textarea{font:inherit;color:inherit;max-width:100%;min-width:0}
+.row>*,.add>*,.ck>*,.hd>*{min-width:0}
+body.lock{overflow:hidden}
 .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
 .hd b.t{font-size:22px;font-weight:700;line-height:1.2;display:block}
 .sm{font-size:12px;color:#5d7a88}
@@ -35,7 +37,7 @@ button,input,textarea{font:inherit;color:inherit}
 .mv{color:#5d7a88;font-style:italic}
 .dd{font-size:11px;background:rgba(255,255,255,.7);border-radius:10px;padding:3px 8px;cursor:pointer;flex:none;color:#5d7a88}
 .rm{color:#5d7a88;cursor:pointer;display:flex;padding:2px;flex:none}
-.nv{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:#fff;display:flex;justify-content:space-around;padding:8px 6px calc(env(safe-area-inset-bottom) + 8px);border-radius:24px 24px 0 0;z-index:10}
+.nv{transform:translateZ(0);position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:#fff;display:flex;justify-content:space-around;padding:8px 6px calc(env(safe-area-inset-bottom) + 8px);border-radius:24px 24px 0 0;z-index:10}
 .nv button{background:none;border:0;text-align:center;font-size:11px;color:#5d7a88;width:62px;cursor:pointer;padding:0}
 .nv button i{display:flex;width:40px;height:40px;border-radius:50%;align-items:center;justify-content:center;margin:0 auto 1px}
 .nv button.a{color:#17394a;font-weight:700}.nv button.a i{background:#FEF7C5}
@@ -51,11 +53,11 @@ button,input,textarea{font:inherit;color:inherit}
 .c .in{background:rgba(255,255,255,.85)}
 textarea.in{min-height:72px}
 .add{display:flex;gap:8px;margin-top:8px}
-.add .in{padding:9px 12px;font-size:15px;border-radius:16px}
+.add .in{padding:9px 12px;font-size:16px;border-radius:16px}
 .add button{width:40px;border:0;border-radius:16px;background:#17394a;color:#fff;display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
-.ov{position:fixed;inset:0;background:rgba(23,57,74,.4);display:flex;align-items:flex-end;justify-content:center;z-index:20}
-.sh{background:#EEF3F5;width:100%;max-width:480px;max-height:92dvh;overflow:auto;border-radius:28px 28px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 22px)}
-.sh.full{height:92dvh}
+.ov{overscroll-behavior:contain;position:fixed;inset:0;background:rgba(23,57,74,.4);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sh{background:#EEF3F5;width:100%;max-width:480px;max-height:92vh;max-height:92dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:28px 28px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 22px)}
+.sh.full{height:92vh;height:92dvh}
 .cols{display:flex;gap:10px;margin:8px 0 4px}
 .cols span{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent}
 .cols span.s{border-color:#17394a}
@@ -66,7 +68,7 @@ textarea.in{min-height:72px}
 .opt span{flex:1;text-align:center;padding:9px 4px;border-radius:16px;background:rgba(255,255,255,.7);cursor:pointer;font-size:13px}
 .opt span.s{background:#17394a;color:#fff}
 .lbl{font-size:13px;font-weight:700;margin:12px 0 6px;display:block}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 92px);background:#17394a;color:#fff;border-radius:20px;padding:10px 18px;font-size:14px;z-index:30}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 92px);background:#17394a;color:#fff;border-radius:20px;padding:10px 18px;font-size:14px;z-index:30;max-width:90vw;text-align:center}
 .strip{display:flex;gap:4px;margin-bottom:6px}
 .strip i{flex:1;height:8px;border-radius:4px;background:#fff}
 .strip i.d{background:#17394a}.strip i.n{background:#F5D1EF}.strip i.r{flex:.7;background:#D5FFC9}
@@ -364,6 +366,7 @@ function render(){
   var body=tab==='today'?rToday(sp):tab==='sprint'?rSprint(sp):tab==='week'?rWeek(sp):tab==='review'?rReview(sp):rHist(sp);
   var old=document.querySelector('.sh'),sc=old?old.scrollTop:0;
   app.innerHTML=body+nav()+(sheet?rSheet(sp):'')+(toastMsg?'<div class="toast">'+esc(toastMsg)+'</div>':'');
+  document.body.classList.toggle('lock',!!sheet);
   var nw=document.querySelector('.sh');if(nw&&sc)nw.scrollTop=sc;
   if(focusSel){var e=document.querySelector(focusSel);if(e)e.focus();focusSel=null}
 }
