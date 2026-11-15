@@ -157,7 +157,7 @@ function taskRow(x,n,full){
   return h+'</div>';
 }
 function empty(){
-  return head('Привет','Начнём спринт?')+(S.sprints.length?'':'<div class="c lc" data-act="settings" style="cursor:pointer"><b>Тут пусто?</b> Если твои данные уже хранятся в Google, нажми сюда и вставь код синхронизации, всё вернётся.</div>')+'<div class="c yl"><b style="font-size:16px">9 недель на 2–3 главные цели</b><div style="margin-top:6px">Выбираешь цели, награду за результат, каждую неделю ставишь себе оценку и в конце разбираешь, что получилось.</div></div><button class="btn" data-act="newsprint">Создать спринт</button>'+(S.sprints.length?'<button class="btn2" data-act="tab" data-t="history">Посмотреть историю</button>':'');
+  return head('Привет','Начнём спринт?')+(S.sprints.length?'':'<div class="c lc" data-act="settings" style="cursor:pointer"><b>Тут пусто?</b> Если твои данные уже хранятся в Google, нажми сюда и вставь код синхронизации, всё вернётся.</div>')+'<div class="c yl"><b style="font-size:16px">9 недель на 2–4 главные цели</b><div style="margin-top:6px">Выбираешь цели, награду за результат, каждую неделю ставишь себе оценку и в конце разбираешь, что получилось.</div></div><button class="btn" data-act="newsprint">Создать спринт</button>'+(S.sprints.length?'<button class="btn2" data-act="tab" data-t="history">Посмотреть историю</button>':'');
 }
 function nav(){
   var items=[['today','sun','Сегодня'],['sprint','rocket','Спринт'],['week','cal','Неделя'],['review','q','Разбор'],['history','chart','История']];
@@ -212,6 +212,7 @@ function rSprint(sp){
     var st=goalStat(sp,g),p=st.t?Math.round(st.d/st.t*100):0;
     h+='<div class="c" style="background:'+g.color+'" data-act="editgoal" data-id="'+g.id+'"><span class="ch">'+esc(g.sphere||'Цель')+'</span><b style="display:block;font-size:16px;margin-top:8px">'+esc(g.title)+'</b>'+(g.why?'<div class="sm" style="color:#36516a;margin-top:2px">Зачем: '+esc(g.why)+'</div>':'')+'<div class="bar"><i style="width:'+p+'%"></i></div><div class="sm" style="margin-top:4px;color:#17394a">'+(st.t?st.d+' из '+st.t+' дел':'дел пока нет')+'</div></div>';
   });
+  if(sp.goals.length<4)h+='<button class="btn2" data-act="addgoal" style="margin-bottom:14px">+ Добавить цель</button>';
   h+='<div class="c yl row" data-act="editreward" style="cursor:pointer"><div class="row" style="justify-content:flex-start;gap:12px">'+ic('gift',24)+'<div><div class="sm" style="color:#17394a">Награда</div><b>'+(sp.reward?esc(sp.reward):'Придумай награду')+'</b></div></div></div>';
   return h;
 }
@@ -331,7 +332,7 @@ function rSheet(sp){
     h+='<span class="lbl">Зачем мне это</span><input class="in" data-bind="ed:why" value="'+esc(ed.why)+'" maxlength="100">';
     h+='<span class="lbl">Цвет</span>'+colPick('ed:color',ed.color);
     h+='<button class="btn" style="margin-top:14px" data-act="savegoal">Сохранить</button>';
-    if(sp&&sp.goals.length>1)h+='<button class="btn2" data-act="delgoal">Удалить цель</button>';
+    if(sp&&ed.id&&sp.goals.length>1)h+='<button class="btn2" data-act="delgoal">Удалить цель</button>';
   }
   if(sheet.k==='reward'){
     h+='<div class="row"><b style="font-size:20px">Награда</b><button class="rb" data-act="closesheet" aria-label="Закрыть">'+ic('x')+'</button></div>';
@@ -375,7 +376,7 @@ function go(t){tab=t;dayF=null;if(t!=='week'&&t!=='review')vw=null;window.scroll
 
 /* ---------- действия ---------- */
 function findTask(sp,n,id){return week(sp,n).tasks.filter(function(x){return x.id===id})[0]}
-function newDraft(){return {start:defStart(),reward:'',goals:[{title:'',sphere:'',why:'',color:COL.lc},{title:'',sphere:'',why:'',color:COL.bl},{title:'',sphere:'',why:'',color:COL.mn}]}}
+function newDraft(){return {start:defStart(),reward:'',goals:[{title:'',sphere:'',why:'',color:COL.lc},{title:'',sphere:'',why:'',color:COL.bl},{title:'',sphere:'',why:'',color:COL.mn},{title:'',sphere:'',why:'',color:COL.pc}]}}
 function setPath(o,path,val){var p=path.split('.');for(var i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=val}
 function bindObj(pre){
   var sp=cur();
@@ -424,9 +425,10 @@ function doAct(el){
     save();sheet=null;vw=null;tab='week';window.scrollTo(0,0);toast('Спринт начался!');render();return;
   }
   if(a==='editgoal'){var g=goalOf(sp,d.id);ed={id:g.id,title:g.title,sphere:g.sphere||'',why:g.why||'',color:g.color};sheet={k:'goal'};render();return}
+  if(a==='addgoal'){var cs=[COL.lc,COL.bl,COL.mn,COL.pc],used=sp.goals.map(function(x){return x.color}),cc=cs.filter(function(c){return used.indexOf(c)<0})[0]||COL.pc;ed={id:null,title:'',sphere:'',why:'',color:cc};sheet={k:'goal'};render();return}
   if(a==='savegoal'){
     if(!ed.title.trim()){toast('Впиши цель');render();return}
-    var g=goalOf(sp,ed.id);g.title=ed.title.trim();g.sphere=ed.sphere.trim();g.why=ed.why.trim();g.color=ed.color;save();sheet=null;render();return;
+    var g=ed.id?goalOf(sp,ed.id):null;if(!g){if(sp.goals.length>=4){sheet=null;render();return}g={id:uid()};sp.goals.push(g)}g.title=ed.title.trim();g.sphere=ed.sphere.trim();g.why=ed.why.trim();g.color=ed.color;save();sheet=null;render();return;
   }
   if(a==='delgoal'){
     if(!confirm('Удалить цель и её дела?'))return;

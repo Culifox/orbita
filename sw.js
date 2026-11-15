@@ -1,5 +1,5 @@
 // Работа без интернета: сначала свежая версия из сети, если сети нет — сохранённая копия.
-const CACHE = 'sprint-v2';
+const CACHE = 'sprint-v3';
 const FILES = ['./', 'index.html', 'sync.js', 'manifest.json', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).catch(() => {})); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil(caches.keys()
