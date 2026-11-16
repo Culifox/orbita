@@ -38,7 +38,7 @@ body.lock{overflow:hidden}
 .dd{font-size:11px;background:rgba(255,255,255,.7);border-radius:10px;padding:3px 8px;cursor:pointer;flex:none;color:#5d7a88}
 .rm{color:#5d7a88;cursor:pointer;display:flex;padding:2px;flex:none}
 .nv{transform:translateZ(0);position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:#fff;display:flex;justify-content:space-around;padding:8px 6px calc(env(safe-area-inset-bottom) + 8px);border-radius:24px 24px 0 0;z-index:10}
-.nv button{background:none;border:0;text-align:center;font-size:11px;color:#5d7a88;width:62px;cursor:pointer;padding:0}
+.nv button{background:none;border:0;text-align:center;font-size:11px;color:#5d7a88;width:56px;cursor:pointer;padding:0}
 .nv button i{display:flex;width:40px;height:40px;border-radius:50%;align-items:center;justify-content:center;margin:0 auto 1px}
 .nv button.a{color:#17394a;font-weight:700}.nv button.a i{background:#FEF7C5}
 .btn{display:block;width:100%;background:#17394a;color:#fff;border:0;border-radius:24px;text-align:center;padding:14px;font-weight:700;margin-bottom:12px;cursor:pointer}
@@ -80,6 +80,12 @@ details summary{list-style:none;cursor:pointer}
 details summary::-webkit-details-marker{display:none}
 .big{font-size:26px;font-weight:700}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mi{display:flex;align-items:center;gap:8px;margin-top:8px}
+.mi span.n{flex:1}
+.mi .in{width:116px;text-align:right;padding:9px 12px}
+.mi .u{width:26px;font-size:12px;color:#5d7a88}
+.spk{display:block;width:100%;height:auto;margin-top:8px}
+.vc{display:inline-block;font-size:12px;padding:2px 9px;border-radius:12px;background:#EEF3F5;margin:4px 6px 0 0}
 </style>
 </head>
 <body>
@@ -88,7 +94,7 @@ details summary::-webkit-details-marker{display:none}
 <script>
 var KEY='sprint-v1', APP='Орбита';
 var S=load(); S.sprints=S.sprints||[]; S.name=S.name||'';
-var tab='today', vw=null, dayF=null, sheet=null, draft=null, ed=null, toastMsg='', focusSel=null, toastT=null;
+var md=null, tab='today', vw=null, dayF=null, sheet=null, draft=null, ed=null, toastMsg='', focusSel=null, toastT=null;
 var app=document.getElementById('app');
 
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
@@ -124,7 +130,8 @@ gift:'<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 
 lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
 left:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
 right:'<path d="M5 12h14M12 5l7 7-7 7"/>',
-x:'<path d="M18 6L6 18M6 6l12 12"/>'
+x:'<path d="M18 6L6 18M6 6l12 12"/>',
+ruler:'<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0z"/><path d="M14.5 12.5l2-2M11.5 9.5l2-2M8.5 6.5l2-2M17.5 15.5l2-2"/>'
 };
 function ic(n,s){s=s||20;return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>'}
 
@@ -160,7 +167,7 @@ function empty(){
   return head('Привет','Начнём спринт?')+(S.sprints.length?'':'<div class="c lc" data-act="settings" style="cursor:pointer"><b>Тут пусто?</b> Если твои данные уже хранятся в Google, нажми сюда и вставь код синхронизации, всё вернётся.</div>')+'<div class="c yl"><b style="font-size:16px">9 недель на 2–4 главные цели</b><div style="margin-top:6px">Выбираешь цели, награду за результат, каждую неделю ставишь себе оценку и в конце разбираешь, что получилось.</div></div><button class="btn" data-act="newsprint">Создать спринт</button>'+(S.sprints.length?'<button class="btn2" data-act="tab" data-t="history">Посмотреть историю</button>':'');
 }
 function nav(){
-  var items=[['today','sun','Сегодня'],['sprint','rocket','Спринт'],['week','cal','Неделя'],['review','q','Разбор'],['history','chart','История']];
+  var items=[['today','sun','Сегодня'],['sprint','rocket','Спринт'],['week','cal','Неделя'],['review','q','Разбор'],['history','chart','История'],['meas','ruler','Замеры']];
   return '<div class="nv">'+items.map(function(i){return '<button class="'+(tab===i[0]?'a':'')+'" data-act="tab" data-t="'+i[0]+'"><i>'+ic(i[1],21)+'</i>'+i[2]+'</button>'}).join('')+'</div>';
 }
 function weekNav(sp,n){
@@ -306,6 +313,51 @@ function rHist(sp0){
   return h;
 }
 
+/* ---------- Замеры ---------- */
+function M(){if(!S.meas||!Array.isArray(S.meas.rows)||!Array.isArray(S.meas.fields))S.meas={fields:[{id:'w',name:'Вес',unit:'кг'},{id:'waist',name:'Талия',unit:'см'},{id:'hips',name:'Бёдра',unit:'см'},{id:'chest',name:'Грудь',unit:'см'}],rows:[]};return S.meas}
+function mdr(){return md||(md={date:today(),v:{}})}
+function nf(x){return String(Math.round(x*10)/10).replace('.',',')}
+function mRows(){return M().rows.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0})}
+function mSeries(fid){return mRows().filter(function(r){return r.v&&r.v[fid]!=null}).map(function(r){return {d:r.date,x:r.v[fid]}})}
+function spark(ser){
+  var W=300,H=96,px=16,py=18,mn=Infinity,mx=-Infinity;
+  ser.forEach(function(p){mn=Math.min(mn,p.x);mx=Math.max(mx,p.x)});
+  var rg=mx-mn||1,span=diff(ser[0].d,ser[ser.length-1].d)||1;
+  var pts=ser.map(function(p){return {x:ser.length>1?px+diff(ser[0].d,p.d)/span*(W-2*px):W/2,y:H-py-(p.x-mn)/rg*(H-2*py),v:p.x}});
+  var h='<svg class="spk" viewBox="0 0 '+W+' '+H+'" aria-hidden="true">';
+  if(pts.length>1)h+='<polyline points="'+pts.map(function(p){return p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ')+'" fill="none" stroke="#17394a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  pts.forEach(function(p,i){var last=i===pts.length-1;h+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(last?5:3.5)+'" fill="'+(last?'#17394a':'#fff')+'" stroke="#17394a" stroke-width="2"/>'});
+  var f=pts[0],l=pts[pts.length-1];
+  h+='<text x="'+Math.min(Math.max(f.x,px),W-px).toFixed(1)+'" y="'+(f.y-9).toFixed(1)+'" text-anchor="'+(pts.length>1?'start':'middle')+'" font-size="11" fill="#36557f" font-family="Manrope,sans-serif">'+nf(f.v)+'</text>';
+  if(pts.length>1)h+='<text x="'+l.x.toFixed(1)+'" y="'+(l.y-9).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#17394a" font-family="Manrope,sans-serif">'+nf(l.v)+'</text>';
+  return h+'</svg>';
+}
+function rMeas(){
+  var m=M(),dr=mdr(),h=head('Динамика по датам','Замеры'),rows=mRows(),last=rows[rows.length-1];
+  var ex=m.rows.filter(function(r){return r.date===dr.date})[0];
+  h+='<div class="c"><div class="row"><b style="font-size:16px">'+(ex?'Замер от '+fmt(dr.date):'Новый замер')+'</b><button class="rb" style="width:auto;padding:0 14px;border-radius:21px;font-size:13px;background:#EEF3F5" data-act="mfields">Параметры</button></div>';
+  h+='<span class="lbl">Дата</span><input class="in" style="background:#EEF3F5" type="date" data-bind="m:date" value="'+esc(dr.date)+'">';
+  m.fields.forEach(function(f){
+    var ser=mSeries(f.id),pv=ser.length?nf(ser[ser.length-1].x):'';
+    h+='<div class="mi"><span class="n">'+esc(f.name)+'</span><input class="in" style="background:#EEF3F5" inputmode="decimal" autocomplete="off" data-bind="m:v.'+f.id+'" value="'+esc(dr.v[f.id]==null?'':dr.v[f.id])+'" placeholder="'+(pv||'—')+'"><span class="u">'+esc(f.unit)+'</span></div>';
+  });
+  h+='<div class="sm" style="margin:8px 0 12px">Можно вписать только то, что измерила. Серым показан прошлый замер.</div><button class="btn" style="margin-bottom:0" data-act="msave">'+(ex?'Обновить замер':'Сохранить замер')+'</button></div>';
+  if(!rows.length)return h+'<div class="c lc">Впиши первые цифры, и здесь появятся графики по каждому параметру.</div>';
+  var cls=['bl','mn','pc','yl','lc'];
+  m.fields.forEach(function(f,i){
+    var ser=mSeries(f.id);if(!ser.length)return;
+    var a=ser[0],b=ser[ser.length-1],dl=b.x-a.x,sg=dl>0?'+':dl<0?'−':'';
+    h+='<div class="c '+cls[i%5]+'"><div class="row" style="align-items:flex-start"><div><div class="sm" style="color:#17394a">'+esc(f.name)+'</div><div class="big">'+nf(b.x)+' <span class="sm">'+esc(f.unit)+'</span></div></div><div style="text-align:right">'+(ser.length>1?'<b>'+sg+nf(Math.abs(dl))+' '+esc(f.unit)+'</b><div class="sm" style="color:#17394a">с '+fmt(a.d)+'</div>':'<div class="sm" style="color:#17394a">первый замер</div>')+'</div></div>'+(ser.length>1?spark(ser):'')+(ser.length>1?'<div class="row sm" style="color:#17394a"><span>'+fmt(a.d)+'</span><span>'+fmt(b.d)+'</span></div>':'')+'</div>';
+  });
+  h+='<div class="sm" style="margin:14px 2px 6px">Все замеры</div>';
+  rows.slice().reverse().forEach(function(r){
+    var chips=m.fields.filter(function(f){return r.v[f.id]!=null}).map(function(f){return '<span class="vc">'+esc(f.name)+' '+nf(r.v[f.id])+' '+esc(f.unit)+'</span>'}).join('');
+    h+='<div class="c"><div class="row" style="align-items:flex-start"><div data-act="medit" data-id="'+r.id+'" style="cursor:pointer;flex:1"><b>'+fmt(r.date)+', '+DOW[dow(r.date)]+'</b><div>'+chips+'</div></div><span class="rm" data-act="mdel" data-id="'+r.id+'" aria-label="Удалить замер">'+ic('x',16)+'</span></div></div>';
+  });
+  h+='<div class="sm" style="margin:2px 2px 0">Нажми на замер, чтобы поправить его.</div>';
+  return h;
+}
+
 /* ---------- окна ---------- */
 function colPick(prefix,val){return '<div class="cols">'+Object.keys(COL).map(function(k){return '<span class="'+(val===COL[k]?'s':'')+'" style="background:'+COL[k]+'" data-act="col" data-p="'+prefix+'" data-v="'+COL[k]+'"></span>'}).join('')+'</div>'}
 function rSheet(sp){
@@ -355,6 +407,12 @@ function rSheet(sp){
     if(cur())h+='<button class="btn2" data-act="endearly">Закончить спринт досрочно</button>';
     h+='<button class="btn" data-act="closesheet" style="margin-top:6px">Готово</button>';
   }
+  if(sheet.k==='mf'){
+    h+='<div class="row"><b style="font-size:20px">Параметры замеров</b><button class="rb" data-act="closesheet" aria-label="Закрыть">'+ic('x')+'</button></div>';
+    M().fields.forEach(function(f){h+='<div class="c" style="margin-top:10px;margin-bottom:0"><div class="row"><span><b>'+esc(f.name)+'</b> <span class="sm">'+esc(f.unit)+'</span></span><span class="rm" data-act="mfdel" data-id="'+f.id+'" aria-label="Убрать параметр">'+ic('x',16)+'</span></div></div>'});
+    h+='<span class="lbl" style="margin-top:18px">Добавить параметр</span><input class="in" data-bind="ed:name" value="'+esc(ed.name)+'" placeholder="Например: Рука, Бедро, Живот" maxlength="24"><input class="in" style="margin-top:8px" data-bind="ed:unit" value="'+esc(ed.unit)+'" placeholder="Единица: см, кг" maxlength="6">';
+    h+='<button class="btn" style="margin-top:14px" data-act="mfadd">Добавить</button>';
+  }
   if(sheet.k==='import'){
     h+='<div class="row"><b style="font-size:20px">Вставить данные</b><button class="rb" data-act="closesheet" aria-label="Закрыть">'+ic('x')+'</button></div>';
     h+='<div class="sm" style="margin:8px 0">Текущие данные на этом телефоне будут заменены.</div><textarea class="in" id="imp" style="min-height:140px" placeholder="Вставь сюда скопированные данные"></textarea><button class="btn" style="margin-top:14px" data-act="doimport">Загрузить</button>';
@@ -364,7 +422,7 @@ function rSheet(sp){
 
 function render(){
   var sp=cur();
-  var body=tab==='today'?rToday(sp):tab==='sprint'?rSprint(sp):tab==='week'?rWeek(sp):tab==='review'?rReview(sp):rHist(sp);
+  var body=tab==='today'?rToday(sp):tab==='sprint'?rSprint(sp):tab==='week'?rWeek(sp):tab==='review'?rReview(sp):tab==='meas'?rMeas():rHist(sp);
   var old=document.querySelector('.sh'),sc=old?old.scrollTop:0;
   app.innerHTML=body+nav()+(sheet?rSheet(sp):'')+(toastMsg?'<div class="toast">'+esc(toastMsg)+'</div>':'');
   document.body.classList.toggle('lock',!!sheet);
@@ -383,6 +441,7 @@ function bindObj(pre){
   if(pre==='d')return draft;
   if(pre==='ed')return ed;
   if(pre==='S')return S;
+  if(pre==='m')return mdr();
   if(pre==='rv'&&sp){var w=week(sp,vwk(sp));return w.review||(w.review={})}
   if(pre==='fr'&&sp)return sp.fd||(sp.fd={res:{}});
   return null;
@@ -391,6 +450,29 @@ function doAct(el){
   var a=el.dataset.act,sp=cur(),d=el.dataset;
   if(typeof syncAct==='function'&&syncAct(a))return;
   if(a==='tab'){go(d.t);return}
+  if(a==='msave'){
+    var m=mdr(),vals={},any=false;
+    M().fields.forEach(function(f){var t=String(m.v[f.id]==null?'':m.v[f.id]).replace(',','.').trim();if(t!==''&&isFinite(+t)){vals[f.id]=+t;any=true}});
+    if(!any){toast('Впиши хотя бы одно число');render();return}
+    if(!m.date)m.date=today();
+    var rs=M().rows,r=rs.filter(function(x){return x.date===m.date})[0];
+    if(!r){r={id:uid(),date:m.date,v:{}};rs.push(r)}
+    for(var k in vals)r.v[k]=vals[k];
+    save();md=null;toast('Замер сохранён');render();return;
+  }
+  if(a==='medit'){var r=M().rows.filter(function(x){return x.id===d.id})[0];if(!r)return;md={date:r.date,v:{}};for(var k in r.v)md.v[k]=nf(r.v[k]);window.scrollTo(0,0);render();return}
+  if(a==='mdel'){if(!confirm('Удалить этот замер?'))return;M().rows=M().rows.filter(function(x){return x.id!==d.id});save();render();return}
+  if(a==='mfields'){ed={name:'',unit:'см'};sheet={k:'mf'};render();return}
+  if(a==='mfadd'){
+    if(!ed.name.trim()){toast('Впиши название');render();return}
+    M().fields.push({id:uid(),name:ed.name.trim(),unit:(ed.unit||'см').trim()});save();ed={name:'',unit:'см'};render();return;
+  }
+  if(a==='mfdel'){
+    if(!confirm('Убрать параметр вместе с его записями?'))return;
+    M().fields=M().fields.filter(function(f){return f.id!==d.id});M().rows.forEach(function(r){delete r.v[d.id]});
+    M().rows=M().rows.filter(function(r){return Object.keys(r.v).length});save();render();return;
+  }
+
   if(a==='tog'){var x=findTask(sp,+d.w,d.id);if(x){x.done=!x.done;save();render()}return}
   if(a==='cyc'){var x=findTask(sp,+d.w,d.id);if(x){x.day=x.day==null?0:x.day>=6?null:x.day+1;save();render()}return}
   if(a==='del'){var w=week(sp,+d.w);w.tasks=w.tasks.filter(function(x){return x.id!==d.id});save();render();return}
@@ -469,7 +551,7 @@ document.addEventListener('click',function(e){
 document.addEventListener('input',function(e){
   var b=e.target.dataset&&e.target.dataset.bind;if(!b)return;
   var p=b.split(':'),o=bindObj(p[0]);if(!o)return;
-  setPath(o,p[1],e.target.value);save();
+  setPath(o,p[1],e.target.value);if(p[0]!=='m')save();
 });
 document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.addin){e.preventDefault();doAct({dataset:{act:'add',g:e.target.dataset.addin}})}
